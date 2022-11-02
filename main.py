@@ -9,10 +9,11 @@ import visualizer
 import time
 import numpy as np
 
-SAMPLES_X, SAMPLES_Y = 3,3 # amount of x and y leds
+SAMPLES_X, SAMPLES_Y = 3,3# amount of x and y leds
 SAMPLE_RADIUS = 256
-SAMPLE_CORNER = True
-MONITOR_NAME = 'DP-2' # monitor name
+SAMPLE_CORNER = False
+SAMPLE_CENTER = False
+MONITOR_NAME = 'DP-4' # monitor name
 
 for m in get_monitors():
         if MONITOR_NAME == m.name:
@@ -45,20 +46,33 @@ def rgb_to_hex(rgb):
     return '%02x%02x%02x' % rgb
 
 sct = mss.mss()
+
 def get_pixel(x,y):
    
+        # flytt dette her inn i create sample cords
+        # deretter gjør så sample cords for w og h values
+        # da trenger vi ikke å kalkulere w og h på nytt hele tiden
         x = int(x)
         y = MONITOR_H-int(y)
 
-        x = MONITOR.x+clamp(x-int(SAMPLE_RADIUS),1,MONITOR_W-1)
+        x = MONITOR.x+clamp(x-int(SAMPLE_RADIUS/2),0,MONITOR_W-1)
         w = int(SAMPLE_RADIUS)
-        y = MONITOR.y+clamp(y-int(SAMPLE_RADIUS),1,MONITOR_H-1)
+        _w = x-MONITOR.x + SAMPLE_RADIUS
+        _w = MONITOR_W - _w
+        _w = SAMPLE_RADIUS + _w
+        w = _w
+
+        y = MONITOR.y+clamp(y-int(SAMPLE_RADIUS/2),0,MONITOR_H-1)
         h = int(SAMPLE_RADIUS)
+        _h = y-MONITOR.y + SAMPLE_RADIUS
+        _h = MONITOR_H - _h 
+        _h = SAMPLE_RADIUS + _h
+        h = _h
 
         pic = sct.grab({ 'left':x, 'top':y, 'width':w, 'height':h})
         pic = Image.frombytes("RGB", pic.size, pic.bgra, "raw", "BGRX")
-        pic = pic.resize((1,1))
-        #pic.save(f'{x}-{y}.png')
+        pic = pic.resize((1,1),resample=Image.CUBIC)
+        #pic.save(f'testing/{x}-{y}.png')
         r,g,b = pic.convert('RGB').getpixel((0,0))
 
         return(rgb_to_hex((r,g,b)))
@@ -92,22 +106,27 @@ def get_samples(samples):
     return _samples
 
 def visualize(vis,samples):
-    vis.show()
+    #vis.show()
     vis.update(samples)
 
 def main():
     samples = create_sample_cords(MONITOR_W,MONITOR_H,SAMPLE_RADIUS,SAMPLE_CORNER,SAMPLES_X,SAMPLES_Y)
     temp_samples = []
 
-    if SAMPLE_CORNER:
+    first_sample = samples[0]
+    last_sample = samples[-1]
+    x1, y1 = first_sample['x'], first_sample['y']  
+    x2, y2 = last_sample['x'], last_sample['y']  
+
+    if not SAMPLE_CENTER:
         for i, s in enumerate(samples):
             x,y = int(s['x']),int(s['y'])
-            if (x == MONITOR_W or x == 0 or y == MONITOR_H or y == 0):
+            if (int(x) == int(x1) or int(x) == int(x2) or int(y) == int(y1) or int(y) == int(y2)):
                 temp_samples.append(s)
             else:
                 print('deleting:',s)
         samples = temp_samples
-    print(samples)
+    #print(samples)
 
     vis = visualizer.Visualization()
     vis.setup(MONITOR_W,MONITOR_H,samples,SAMPLE_RADIUS)
@@ -115,16 +134,19 @@ def main():
         start = time.time()
         samples = get_samples(samples)
 
-        #visualize(vis,samples)
-        
-        os.system('clear')
-
-        for s in samples:
-            print(s)
+        visualize(vis,samples)
 
         done = time.time()
         elapsed = done - start
+        delay=0.033333-elapsed
+        if delay >= 0 : time.sleep(delay)
+        done = time.time()
+        elapsed = done - start
+    
+        os.system('clear')
         print(elapsed)
+        for s in samples:
+            print(s)
 
        
 

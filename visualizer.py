@@ -25,8 +25,16 @@ class Visualization:
             self.samples.append(c)
 
     def update(self,samples):
+        '''
         for i, c in reversed(list(enumerate(self.samples))):
             self.samples[i].set_facecolor(f"#{samples[i]['color']}")
+        '''
+        for s in samples:
+            for i, self_sample in list(enumerate(self.samples)):   
+                x,y = self_sample.get_center()
+                if s['x'] == x and s['y'] == y :
+                    self.samples[i].set_facecolor(f"#{samples[i]['color']}")
+            
             
     '''
     def on_click(self, event):
