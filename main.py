@@ -9,11 +9,11 @@ import visualizer
 import time
 import numpy as np
 
-SAMPLES_X, SAMPLES_Y = 3,3# amount of x and y leds
-SAMPLE_RADIUS = 256
+SAMPLES_X, SAMPLES_Y = 11,11# amount of x and y leds
+SAMPLE_RADIUS = 64
 SAMPLE_CORNER = False
 SAMPLE_CENTER = False
-MONITOR_NAME = 'DP-4' # monitor name
+MONITOR_NAME = 'Virtual1' # monitor name
 
 for m in get_monitors():
         if MONITOR_NAME == m.name:
@@ -23,10 +23,10 @@ def get_monitor():
     for m in get_monitors():
         print(str(m))
         if MONITOR_NAME == m.name:
-            MONITOR_W,MONITOR_H = m.width,m.height
             return m
 
 MONITOR = get_monitor()
+MONITOR_W,MONITOR_H = MONITOR.width,MONITOR.height
 
 def clamp(val, minval, maxval):
     if val <= minval:
@@ -56,18 +56,16 @@ def get_pixel(x,y):
         y = MONITOR_H-int(y)
 
         x = MONITOR.x+clamp(x-int(SAMPLE_RADIUS/2),0,MONITOR_W-1)
-        w = int(SAMPLE_RADIUS)
-        _w = x-MONITOR.x + SAMPLE_RADIUS
-        _w = MONITOR_W - _w
-        _w = SAMPLE_RADIUS + _w
-        w = _w
-
         y = MONITOR.y+clamp(y-int(SAMPLE_RADIUS/2),0,MONITOR_H-1)
+
+        w = int(SAMPLE_RADIUS)
         h = int(SAMPLE_RADIUS)
-        _h = y-MONITOR.y + SAMPLE_RADIUS
-        _h = MONITOR_H - _h 
-        _h = SAMPLE_RADIUS + _h
-        h = _h
+
+        if x-MONITOR.x + w >= MONITOR_W:
+            w = MONITOR_W - x-MONITOR.x
+
+        if y-MONITOR.y + h >= MONITOR_H:
+            h = MONITOR_H - y-MONITOR.y
 
         pic = sct.grab({ 'left':x, 'top':y, 'width':w, 'height':h})
         pic = Image.frombytes("RGB", pic.size, pic.bgra, "raw", "BGRX")

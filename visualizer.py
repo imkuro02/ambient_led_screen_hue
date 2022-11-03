@@ -20,7 +20,7 @@ class Visualization:
         self.ax.set_title('Click to move the circle')
 
         for s in samples:
-            c = Circle((s['x'],s['y']),256)
+            c = Circle((s['x'],s['y']),64*2)
             self.ax.add_artist(c)
             self.samples.append(c)
 
