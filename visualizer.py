@@ -8,19 +8,21 @@ class Visualization:
     def __init__(self):
         pass
         
-    def setup(self,monitor_w,monitor_h,samples,radius):
+    def setup(self,monitor_x,monitor_y,monitor_w,monitor_h,samples,radius):
         self.fig, self.ax = plt.subplots()
         self.ax.axis('equal')
-        plt.plot(0,0,monitor_w,monitor_h)
+        plt.plot(monitor_x,monitor_y,monitor_w,monitor_h)
+        self.ax.invert_yaxis()
 
         self.samples = []
 
-        self.border_rec = Rectangle((0,0),monitor_w,monitor_h,fill = False)
-        self.ax.add_artist(self.border_rec)
+        # dont care
+        #self.border_rec = Rectangle((monitor_x-256,monitor_y-256),monitor_w,monitor_h,fill = False)
+        #self.ax.add_artist(self.border_rec)
         self.ax.set_title('Click to move the circle')
 
         for s in samples:
-            c = Circle((s['x'],s['y']),64*2)
+            c = Circle((s['x'],s['y']),radius)
             self.ax.add_artist(c)
             self.samples.append(c)
 

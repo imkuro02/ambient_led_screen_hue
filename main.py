@@ -9,11 +9,11 @@ import visualizer
 import time
 import numpy as np
 
-SAMPLES_X, SAMPLES_Y = 11,11# amount of x and y leds
-SAMPLE_RADIUS = 64
+SAMPLES_X, SAMPLES_Y = 3,3# amount of x and y leds
+SAMPLE_RADIUS = 256
 SAMPLE_CORNER = False
 SAMPLE_CENTER = False
-MONITOR_NAME = 'Virtual1' # monitor name
+MONITOR_NAME = 'DP-4' # monitor name
 
 for m in get_monitors():
         if MONITOR_NAME == m.name:
@@ -53,19 +53,12 @@ def get_pixel(x,y):
         # deretter gjør så sample cords for w og h values
         # da trenger vi ikke å kalkulere w og h på nytt hele tiden
         x = int(x)
-        y = MONITOR_H-int(y)
-
-        x = MONITOR.x+clamp(x-int(SAMPLE_RADIUS/2),0,MONITOR_W-1)
-        y = MONITOR.y+clamp(y-int(SAMPLE_RADIUS/2),0,MONITOR_H-1)
+        y = int(y)#MONITOR_H-int(y)
 
         w = int(SAMPLE_RADIUS)
         h = int(SAMPLE_RADIUS)
 
-        if x-MONITOR.x + w >= MONITOR_W:
-            w = MONITOR_W - x-MONITOR.x
-
-        if y-MONITOR.y + h >= MONITOR_H:
-            h = MONITOR_H - y-MONITOR.y
+        print(x,y,w,h)
 
         pic = sct.grab({ 'left':x, 'top':y, 'width':w, 'height':h})
         pic = Image.frombytes("RGB", pic.size, pic.bgra, "raw", "BGRX")
@@ -88,9 +81,24 @@ def create_sample_cords(monitor_w,
     space_y = (monitor_h/(samples_y-int(sample_corner*1)))
     for ii in range(0,samples_y):
         for i in range(0,samples_x):
+                x = (space_x*i)+((space_x/2)*int(not sample_corner))
+                y = (space_y*ii)+((space_y/2)*int(not sample_corner))
+                x = MONITOR.x+clamp(x-int(SAMPLE_RADIUS/2),0,MONITOR_W-1)
+                y = MONITOR.y+clamp(y-int(SAMPLE_RADIUS/2),0,MONITOR_H-1)
+
+                w = int(SAMPLE_RADIUS)
+                h = int(SAMPLE_RADIUS)
+
+                if x-MONITOR.x + w > MONITOR_W:
+                    x -= MONITOR_W - (x-MONITOR.x)
+
+                if y-MONITOR.y + h > MONITOR_H:
+                    y -= MONITOR_H - (y-MONITOR.y)
+
                 sample = {
-                'x':(space_x*i)+((space_x/2)*int(not sample_corner)),
-                'y':(space_y*ii)+((space_y/2)*int(not sample_corner))}
+                    'x':x,
+                    'y':y
+                }
                 samples.append(sample)
     #visualize_samples(samples)
     return samples
@@ -104,7 +112,7 @@ def get_samples(samples):
     return _samples
 
 def visualize(vis,samples):
-    #vis.show()
+    vis.show()
     vis.update(samples)
 
 def main():
@@ -127,7 +135,7 @@ def main():
     #print(samples)
 
     vis = visualizer.Visualization()
-    vis.setup(MONITOR_W,MONITOR_H,samples,SAMPLE_RADIUS)
+    vis.setup(MONITOR.x,MONITOR.y,MONITOR_W,MONITOR_H,samples,SAMPLE_RADIUS)
     while True:
         start = time.time()
         samples = get_samples(samples)
@@ -145,13 +153,6 @@ def main():
         print(elapsed)
         for s in samples:
             print(s)
-
-       
-
-
-
-
-
 
 if __name__ == '__main__':
     main()
