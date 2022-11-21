@@ -8,12 +8,15 @@ import os
 import visualizer
 import time
 import numpy as np
+import colorsys
+import serializer as ser
 
-SAMPLES_X, SAMPLES_Y = 3,3# amount of x and y leds
+SAMPLES_X, SAMPLES_Y =6,4# amount of x and y leds
 SAMPLE_RADIUS = 256
 SAMPLE_CORNER = False
 SAMPLE_CENTER = False
-MONITOR_NAME = 'DP-4' # monitor name
+SAMPLE_BOTTOM_ONLY = True
+MONITOR_NAME = 'DP-2' # monitor name
 
 for m in get_monitors():
         if MONITOR_NAME == m.name:
@@ -57,8 +60,7 @@ def get_pixel(x,y):
 
         w = int(SAMPLE_RADIUS)
         h = int(SAMPLE_RADIUS)
-
-        print(x,y,w,h)
+        #print(x,y,w,h)
 
         pic = sct.grab({ 'left':x, 'top':y, 'width':w, 'height':h})
         pic = Image.frombytes("RGB", pic.size, pic.bgra, "raw", "BGRX")
@@ -112,8 +114,13 @@ def get_samples(samples):
     return _samples
 
 def visualize(vis,samples):
-    vis.show()
-    vis.update(samples)
+    #vis.show()
+    data = ''
+    for _, i in enumerate(samples):
+        r,g,b = hex_to_rgb(i['color'])
+        data += f'{_},{r},{g},{b}\\'
+    #vis.update(samples))
+    ser.send(data)
 
 def main():
     samples = create_sample_cords(MONITOR_W,MONITOR_H,SAMPLE_RADIUS,SAMPLE_CORNER,SAMPLES_X,SAMPLES_Y)
@@ -125,13 +132,25 @@ def main():
     x2, y2 = last_sample['x'], last_sample['y']  
 
     if not SAMPLE_CENTER:
+        temp_samples = []
         for i, s in enumerate(samples):
             x,y = int(s['x']),int(s['y'])
             if (int(x) == int(x1) or int(x) == int(x2) or int(y) == int(y1) or int(y) == int(y2)):
                 temp_samples.append(s)
             else:
                 print('deleting:',s)
-        samples = temp_samples
+
+    if SAMPLE_BOTTOM_ONLY:
+        temp_samples = []
+        for i, s in enumerate(samples):
+            x,y = int(s['x']),int(s['y'])
+            if (int(y) == int(y2)):
+                temp_samples.append(s)
+            else:
+                print('deleting:',s)
+
+
+    samples = temp_samples
     #print(samples)
 
     vis = visualizer.Visualization()
@@ -144,12 +163,12 @@ def main():
 
         done = time.time()
         elapsed = done - start
-        delay=0.033333-elapsed
-        if delay >= 0 : time.sleep(delay)
+        #delay=0.033333-elapsed
+        #if delay >= 0 : time.sleep(delay)
         done = time.time()
         elapsed = done - start
     
-        os.system('clear')
+        #os.system('clear')
         print(elapsed)
         for s in samples:
             print(s)

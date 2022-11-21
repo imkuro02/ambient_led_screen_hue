@@ -21,9 +21,10 @@ class Visualization:
         #self.ax.add_artist(self.border_rec)
         self.ax.set_title('Click to move the circle')
 
-        for s in samples:
+        for i, s in enumerate(samples):
             c = Circle((s['x'],s['y']),radius)
             self.ax.add_artist(c)
+            plt.text(s['x'],s['y'],f'{int(s["x"])},{int(s["y"])} {i}')
             self.samples.append(c)
 
     def update(self,samples):
