@@ -17,15 +17,21 @@ CRGBArray<NUM_LEDS>leds;
 void setup() {
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
     FastLED.setBrightness(  BRIGHTNESS );
-    Serial.begin(115200);
+    Serial.begin(2000000);
     Serial.println("<Arduino is ready>");
 }
 
+int IRGB[4];
+int cur_IRGB = 0; 
 void loop() {
     recvWithEndMarker();
     showNewData();
-
     
+    if(cur_IRGB==23){ // if all leds have been set) 
+      FastLED.show(); 
+      Serial.flush();
+      
+    }
 }
 
 void recvWithEndMarker() {
@@ -35,7 +41,7 @@ void recvWithEndMarker() {
     
     while (Serial.available() > 0 && newData == false) {
         rc = Serial.read();
-        Serial.print(rc);
+        //Serial.print(rc);
 
         if (rc != endMarker) {
             receivedChars[ndx] = rc;
@@ -51,13 +57,13 @@ void recvWithEndMarker() {
         }
     }
 }
-int IRGB[4];
+
 void showNewData() {
     if (newData == true) {
         Serial.print("This just in ... ");
-        Serial.println(receivedChars);
+        Serial.print(receivedChars);
         newData = false;
-    
+        
 
         /*
         char data [] = "12,34";
@@ -72,12 +78,12 @@ void showNewData() {
 
         
 
-        char* d = strtok(receivedChars, ",");
+        char* d = strtok(receivedChars, ".");
         for(int i = 0; i<4; i++){
             //Serial.println(d);
             
             int y = atoi(d);
-            d = strtok(NULL, ",");
+            d = strtok(NULL, ".");
             
             
             IRGB[i] = y;
@@ -86,8 +92,17 @@ void showNewData() {
             //Serial.println("...");         
         }
 
+
+        //leds[IRGB[0]] = strtol("0xFFFFFF", NULL, 0);
+        leds[IRGB[0]].setRGB( IRGB[1], IRGB[2], IRGB[3]);           
+        
+        
+        cur_IRGB = IRGB[0]; 
+
+        
         // this line makes it so one sample controls 6 pixels
 
+        /*
         switch(IRGB[0]){
           case 0:
             leds[0].setRGB( IRGB[1], IRGB[2], IRGB[3]);   
@@ -126,6 +141,7 @@ void showNewData() {
             leds[23].setRGB( IRGB[1], IRGB[2], IRGB[3]);   
           break;          
         }
+        */
         
                          
         
@@ -137,8 +153,7 @@ void showNewData() {
         Serial.flush();
         */
     }
-    FastLED.show(); 
-    Serial.flush();
+    
     //pixels.clear();
     //pixels.setBrightness(10);
     //pixels.setPixelColor(IRGB[0], pixels.Color(IRGB[1], IRGB[2], IRGB[3]));

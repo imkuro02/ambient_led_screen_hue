@@ -11,11 +11,11 @@ import numpy as np
 import colorsys
 import serializer as ser
 
-SAMPLES_X, SAMPLES_Y =6,4# amount of x and y leds
-SAMPLE_RADIUS = 256
-SAMPLE_CORNER = False
+SAMPLES_X, SAMPLES_Y = 24,2# amount of x and y leds
+SAMPLE_RADIUS = 140 # 140 is monitor_w / 24 so it doesnt overlap kekw
+SAMPLE_CORNER = True
 SAMPLE_CENTER = False
-SAMPLE_BOTTOM_ONLY = True
+SAMPLE_BOTTOM_ONLY = False
 MONITOR_NAME = 'DP-2' # monitor name
 
 for m in get_monitors():
@@ -30,6 +30,7 @@ def get_monitor():
 
 MONITOR = get_monitor()
 MONITOR_W,MONITOR_H = MONITOR.width,MONITOR.height
+
 
 def clamp(val, minval, maxval):
     if val <= minval:
@@ -114,12 +115,16 @@ def get_samples(samples):
     return _samples
 
 def visualize(vis,samples):
-    #vis.show()
+    # pad the data, this fixes the flickering of the starter leds..
     data = ''
+    data += '0'+'\\'
+    data += data*100
     for _, i in enumerate(samples):
         r,g,b = hex_to_rgb(i['color'])
         data += f'{_},{r},{g},{b}\\'
-    #vis.update(samples))
+    data += f'24\\'
+    #vis.show()
+    #vis.update(samples)
     ser.send(data)
 
 def main():
@@ -168,10 +173,11 @@ def main():
         done = time.time()
         elapsed = done - start
     
-        #os.system('clear')
+        os.system('clear')
         print(elapsed)
         for s in samples:
             print(s)
+            pass
 
 if __name__ == '__main__':
     main()
