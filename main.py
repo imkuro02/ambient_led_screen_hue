@@ -11,11 +11,12 @@ import numpy as np
 import colorsys
 import serializer as ser
 
-SAMPLES_X, SAMPLES_Y = 24,2# amount of x and y leds
+SAMPLES_X, SAMPLES_Y = 24,5# amount of x and y leds
 SAMPLE_RADIUS = 140 # 140 is monitor_w / 24 so it doesnt overlap kekw
-SAMPLE_CORNER = True
-SAMPLE_CENTER = False
-SAMPLE_BOTTOM_ONLY = False
+SAMPLE_CORNER = 1
+SAMPLE_CENTER = 0
+SAMPLE_BOTTOM_ONLY = 1
+VISUALIZE = 0
 MONITOR_NAME = 'DP-2' # monitor name
 
 for m in get_monitors():
@@ -71,6 +72,7 @@ def get_pixel(x,y):
 
         return(rgb_to_hex((r,g,b)))
 
+'''
 def create_sample_cords(monitor_w,
                         monitor_h,
                         sample_radius,
@@ -93,7 +95,7 @@ def create_sample_cords(monitor_w,
                 h = int(SAMPLE_RADIUS)
 
                 if x-MONITOR.x + w > MONITOR_W:
-                    x -= MONITOR_W - (x-MONITOR.x)
+                    x -= MONITOR_W - (x-MONITOR.x) 
 
                 if y-MONITOR.y + h > MONITOR_H:
                     y -= MONITOR_H - (y-MONITOR.y)
@@ -105,6 +107,28 @@ def create_sample_cords(monitor_w,
                 samples.append(sample)
     #visualize_samples(samples)
     return samples
+'''
+
+def create_sample_cords(monitor_w,
+                        monitor_h,
+                        sample_radius,
+                        sample_corner,
+                        samples_x,
+                        samples_y):
+    samples = []
+    r = sample_radius
+    #numpy.linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0)
+    x_cords = MONITOR.x + np.linspace(start=0,stop=monitor_w-r,num=samples_x,endpoint=True)
+    y_cords = MONITOR.y + np.linspace(start=0,stop=monitor_h-r,num=samples_y,endpoint=True)
+
+    # y = MONITOR.y + MONITOR_H - r
+
+    for x in x_cords:
+        for y in y_cords:
+            sample = {'x':x,'y':y}
+            samples.append(sample)
+
+    return samples
 
 def get_samples(samples):
     _samples = []
@@ -114,7 +138,7 @@ def get_samples(samples):
         _samples.append(s)
     return _samples
 
-def visualize(vis,samples):
+def visualize(samples):
     # pad the data, this fixes the flickering of the starter leds..
     data = ''
     data += '0'+'\\'
@@ -123,8 +147,12 @@ def visualize(vis,samples):
         r,g,b = hex_to_rgb(i['color'])
         data += f'{_},{r},{g},{b}\\'
     data += f'24\\'
-    #vis.show()
-    #vis.update(samples)
+    if VISUALIZE:
+        import vis_overlay as v
+        d = v.Drawer(MONITOR.x,MONITOR.y,MONITOR_W,MONITOR_H)
+        d.draw(samples,SAMPLE_RADIUS)
+        #vis.show()
+        #vis.update(samples)
     ser.send(data)
 
 def main():
@@ -158,13 +186,13 @@ def main():
     samples = temp_samples
     #print(samples)
 
-    vis = visualizer.Visualization()
-    vis.setup(MONITOR.x,MONITOR.y,MONITOR_W,MONITOR_H,samples,SAMPLE_RADIUS)
+    #vis = visualizer.Visualization()
+    #vis.setup(MONITOR.x,MONITOR.y,MONITOR_W,MONITOR_H,samples,SAMPLE_RADIUS)
     while True:
         start = time.time()
         samples = get_samples(samples)
 
-        visualize(vis,samples)
+        visualize(samples)
 
         done = time.time()
         elapsed = done - start

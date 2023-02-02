@@ -17,14 +17,15 @@ class Visualization:
         self.samples = []
 
         # dont care
-        #self.border_rec = Rectangle((monitor_x-256,monitor_y-256),monitor_w,monitor_h,fill = False)
-        #self.ax.add_artist(self.border_rec)
+        self.border_rec = Rectangle((monitor_x,monitor_y),monitor_w,monitor_h,fill = False)
+        self.ax.add_artist(self.border_rec)
         self.ax.set_title('Click to move the circle')
 
         for i, s in enumerate(samples):
-            c = Circle((s['x'],s['y']),radius)
+            c = Circle((s['x']+radius/2,s['y']),radius)
             self.ax.add_artist(c)
-            plt.text(s['x'],s['y'],f'{int(s["x"])},{int(s["y"])} {i}')
+            #plt.text(s['x'],s['y'],f'{int(s["x"])},{int(s["y"])} {i}')
+            plt.text(s['x'],s['y'],f'{i}')
             self.samples.append(c)
 
     def update(self,samples):
