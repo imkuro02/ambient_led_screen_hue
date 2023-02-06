@@ -3,7 +3,7 @@ import tkinter as tk
 import tkinter as tk # Python 3
 from tkinter import Canvas, Frame, BOTH, Tk
 
-class Drawer():
+class Overlay():
     def __init__(self,x,y,w,h):
         self.x = x
         self.y = y
@@ -19,14 +19,20 @@ class Drawer():
         root.wm_attributes("-alpha", 0.6)
         canvas = tk.Canvas(root,bg='white',height=self.h,width=self.w)
         for s in samples:
-            x = s['x']-self.x
-            y = s['y']-self.y
-            print(x,y)
+            x = s.x-self.x
+            y = s.y-self.y
             size = sample_radius
-            canvas.create_line(x, y, x+size, y, fill = "red")
-            canvas.create_line(x, y, x, y+size, fill = "red")
-            canvas.create_line(x+size, y+size, x+size, y, fill = "red")
-            canvas.create_line(x, y+size, x+size, y+size, fill = "red")
+            canvas.create_line(x,       y,          x+size,     y,      fill = "red")
+            canvas.create_line(x,       y,          x,          y+size, fill = "red")
+            canvas.create_line(x+size,  y+size,     x+size,     y,      fill = "red")
+            canvas.create_line(x,       y+size,     x+size,     y+size, fill = "red")
+
+        def onclick(e):
+            canvas.destroy()
+            root.quit()
+            root.destroy()
+
+        canvas.bind('<Button-1>', onclick)
         
         canvas.pack()
         root.mainloop()
